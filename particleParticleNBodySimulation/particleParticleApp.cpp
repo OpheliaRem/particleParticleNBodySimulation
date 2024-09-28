@@ -129,6 +129,7 @@ Vector Sum(Vector* sequence, int size)
 	Vector sum;
 	sum.x = .0;
 	sum.y = .0;
+	sum.z = .0;
 
 	for (int i = 0; i < size; ++i)
 	{
