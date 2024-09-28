@@ -1,7 +1,6 @@
 #include "Particle.h"
 #include "Vector.h"
 #include <fstream>
-#include <vector>
 using namespace std;
 
 /*–ешение задачи N-тел методом Particle-Particle (пр€мого интегрировани€).
@@ -31,7 +30,6 @@ int main()
 	fileCoordinates.open("Coordinates.txt");
 
 	int n;
-	//double timeStep = 3600 * 24;
 	double timeStep = 0.01;
 
 	bool isConvertingFileNeeded = true;
