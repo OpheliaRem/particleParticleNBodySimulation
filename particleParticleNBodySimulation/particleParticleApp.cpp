@@ -1,7 +1,9 @@
 #include "Particle.h"
 #include "Vector.h"
 #include <fstream>
-using namespace std;
+#include <iostream>
+#include <string>
+#include <filesystem>
 
 /*Решение задачи N-тел методом Particle-Particle (прямого интегрирования).
 моделируется трёхмерное пространство,
@@ -18,7 +20,7 @@ equations of motion are solved with Euler's method.
 Forces Fij and Fji are treated as equal with different signs, due to Newton's 3rd law. That halves the amount of calculations.*/
 
 
-Particle* InitializeNBodySystem(const string path, int& n);
+Particle* InitializeNBodySystem(const std::string path, int& n);
 
 double Cube(double number);
 
@@ -26,24 +28,35 @@ Vector Sum(Vector* sequence, int size);
 
 int main()
 {
-	ofstream fileCoordinates;
-	fileCoordinates.open("Coordinates.txt");
-
 	int n;
 	double timeStep = 0.01;
 
-	bool isConvertingFileNeeded = true;
-
 	Particle* particles = InitializeNBodySystem("Particles.txt", n);
 
-	Vector** force = new Vector * [n];
+	Vector** force = new Vector*[n];
 	for (int i = 0; i < n; ++i)
 		force[i] = new Vector[n];
+
+
+	std::filesystem::path path = L"coordinates";
+	if (std::filesystem::exists(path)) 
+	{
+		std::filesystem::remove_all(path);
+	}
+
+	if (!std::filesystem::create_directory(path))
+	{
+		std::cout << "Error making a directory\n";
+		return 1;
+	}
 
 	double time = 0.0;
 	for (;;)
 	{
-		fileCoordinates << "Moment: " << time << endl;
+		std::ofstream fileCoordinates;
+		std::string timeStr = std::to_string(time);
+		fileCoordinates.open("coordinates\\" + timeStr + ".csv");
+		fileCoordinates << "x;y;z\n";
 
 
 		for (int i = 0; i < n; ++i)
@@ -64,8 +77,7 @@ int main()
 		
 		for (int i = 0; i < n; ++i)
 		{
-			fileCoordinates << "Position of " << i << ": ";
-			fileCoordinates << particles[i].position << endl;
+			fileCoordinates << particles[i].position << std::endl;
 
 			particles[i].acceleration = Sum(force[i], n) / particles[i].mass;
 
@@ -73,12 +85,9 @@ int main()
 
 			particles[i].position = particles[i].position + particles[i].velocity * timeStep;
 		}
-		fileCoordinates << endl;
-		fileCoordinates << endl;
-		fileCoordinates << endl;
-		fileCoordinates << endl;
 
 		time += timeStep;
+		fileCoordinates.close();
 	}
 
 
@@ -86,13 +95,12 @@ int main()
 		delete[] force[i];
 	delete[] force;
 	delete[] particles;
-	fileCoordinates.close();
 	return 0;
 }
 
-Particle* InitializeNBodySystem(const string path, int& n)
+Particle* InitializeNBodySystem(const std::string path, int& n)
 {
-	ifstream fileParticles;
+	std::ifstream fileParticles;
 	fileParticles.open(path);
 
 	char tempString[256];
